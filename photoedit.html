@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Photo Editor</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Photo Editor</h1>
+
+    <input type="file" id="upload" accept="image/*">
+    <canvas id="photoCanvas"></canvas>
+
+    <div class="edit-options">
+        <button id="resize">Resize Your Photos</button>
+        <button id="changeColor">Change the Color of an Object</button>
+        <button id="clone">Clone Away Unwanted Objects</button>
+        <button id="addText">Add Text to Images</button>
+        <button id="applyEffects">Get Creative With One-Click Photo Effects</button>
+        <button id="cartoonize">Turn Photos Into Cartoons</button>
+        <button id="download">Download</button>
+    </div>
+
+    <a id="downloadLink" style="display: none">Download Link</a>
+
+    <script src="script.js">
+    const uploadInput = document.getElementById('upload');
+const photoCanvas = document.getElementById('photoCanvas');
+const ctx = photoCanvas.getContext('2d');
+const downloadLink = document.getElementById('downloadLink');
+
+let image = new Image();
+
+uploadInput.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        image = new Image();
+        image.onload = function() {
+            photoCanvas.width = image.width;
+            photoCanvas.height = image.height;
+            ctx.drawImage(image, 0, 0);
+        };
+        image.src = URL.createObjectURL(file);
+    }
+});
+
+document.getElementById('resize').addEventListener('click', function() {
+    // Implement resizing functionality with live preview using the canvas element.
+});
+
+document.getElementById('changeColor').addEventListener('click', function() {
+    // Implement color change functionality with live preview.
+});
+
+document.getElementById('clone').addEventListener('click', function() {
+    // Implement object cloning with live preview.
+});
+
+document.getElementById('addText').addEventListener('click', function() {
+    // Implement text addition functionality with live preview.
+});
+
+document.getElementById('applyEffects').addEventListener('click', function() {
+    // Implement one-click effects with live preview.
+});
+
+document.getElementById('cartoonize').addEventListener('click', function() {
+    // Implement cartoonize functionality with live preview.
+});
+
+document.getElementById('download').addEventListener('click', function() {
+    // Implement download functionality.
+    const downloadURL = photoCanvas.toDataURL("image/png");
+    downloadLink.href = downloadURL;
+    downloadLink.download = "edited_image.png";
+    downloadLink.style.display = 'block';
+});
+</script>
+</body>
+</html>

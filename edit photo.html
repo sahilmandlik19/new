@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Photo Editor</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/camanjs/4.1.2/caman.full.min.js"></script>
+    <style>
+        .row {
+            display: flex;
+            align-items: center;
+        }
+
+        .row label {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Photo Editor</h1>
+    
+    <input type="file" id="upload" accept="image/*">
+    <canvas id="photoCanvas"></canvas>
+    
+    <div class="row">
+        <label for="newWidth">New Width:</label>
+        <input type="number" id="newWidth" placeholder="Enter new width">
+    </div>
+
+    <div class="row">
+        <label for "newHeight">New Height:</label>
+        <input type="number" id="newHeight" placeholder="Enter new height">
+    </div>
+
+    <div class="row">
+        <label for="brightnessRange">Brightness:</label>
+        <input type="range" id="brightnessRange" min="-100" max="100" value="0">
+    </div>
+
+    <div class="row">
+        <label for="contrastRange">Contrast:</label>
+        <input type="range" id="contrastRange" min="-100" max="100" value="0">
+    </div>
+    
+    <button id="resizeImage">Resize Image</button>
+    <button id="rotateLeft">Rotate Left</button>
+    <button id="rotateRight">Rotate Right</button>
+    <button id="flipHorizontal">Flip Horizontal</button>
+    <button id="flipVertical">Flip Vertical</button>
+    <button id="reset">Reset</button>
+
+    <script>
+        let isFlippedHorizontal = false;
+        let isFlippedVertical = false;
+        let totalRotation = 0;
+
+        // Initialize CamanJS when an image is selected
+        document.getElementById('upload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const image = new Image();
+                const canvas = document.getElementById('photoCanvas');
+                const ctx = canvas.getContext('2d');
+
+                image.onload = function() {
+                    canvas.width = image.width;
+                    canvas.height = image.height;
+                    ctx.drawImage(image, 0, 0);
+
+                    Caman('#photoCanvas', function () {
+                        this.revert();
+                    });
+
+                    // Automatically resize the image initially
+                    autoResizeImage(800, 600); // Adjust these values as needed
+                };
+                image.src = URL.createObjectURL(file);
+            }
+        });
+
+        // Apply brightness and contrast adjustments using sliders
+        document.getElementById('brightnessRange').addEventListener('input', function() {
+            const brightnessValue = parseInt(this.value);
+            Caman('#photoCanvas', function () {
+                this.revert();
+                this.brightness(brightnessValue).render();
+            });
+        });
+
+        document.getElementById('contrastRange').addEventListener('input', function() {
+            const contrastValue = parseInt(this.value);
+            Caman('#photoCanvas', function () {
+                this.revert();
+                this.contrast(contrastValue).render();
+            });
+        });
+
+        // Resize the image to user-specified dimensions
+        document.getElementById('resizeImage').addEventListener('click', function() {
+            const newWidth = parseInt(document.getElementById('newWidth').value);
+            const newHeight = parseInt(document.getElementById('newHeight').value);
+
+            if (!isNaN(newWidth) && !isNaN(newHeight) && newWidth > 0 && newHeight > 0) {
+                Caman('#photoCanvas', function () {
+                    this.resize({
+                        width: newWidth,
+                        height: newHeight
+                    }).render();
+                });
+            } else {
+                alert("Please enter valid width and height values.");
+            }
+        });
+
+        // Rotate the image left
+        document.getElementById('rotateLeft').addEventListener('click', function() {
+            totalRotation -= 90;
+            applyRotation();
+        });
+
+        // Rotate the image right
+        document.getElementById('rotateRight').addEventListener('click', function() {
+            totalRotation += 90;
+            applyRotation();
+        });
+
+        function applyRotation() {
+            Caman('#photoCanvas', function () {
+                this.revert();
+                this.rotate(totalRotation).render();
+            });
+        }
+
+        // Flip the image horizontally
+        document.getElementById('flipHorizontal').addEventListener('click', function() {
+            isFlippedHorizontal = !isFlippedHorizontal;
+            updateImageFlip();
+        });
+
+        // Flip the image vertically
+        document.getElementById('flipVertical').addEventListener('click', function() {
+            isFlippedVertical = !isFlippedVertical;
+            updateImageFlip();
+        });
+
+        function updateImageFlip() {
+            const canvas = document.getElementById('photoCanvas');
+            canvas.style.transform = `scaleX(${isFlippedHorizontal ? -1 : 1}) scaleY(${isFlippedVertical ? -1 : 1})`;
+        }
+
+        // Reset the image
+        document.getElementById('reset').addEventListener('click', function() {
+            isFlippedHorizontal = false;
+            isFlippedVertical = false;
+            totalRotation = 0;
+
+            const canvas = document.getElementById('photoCanvas');
+            canvas.style.transform = 'scaleX(1) scaleY(1)';
+
+            Caman('#photoCanvas', function () {
+                this.revert();
+            });
+            // Reset the sliders
+            document.getElementById('brightnessRange').value = 0;
+            document.getElementById('contrastRange').value = 0;
+        });
+
+        // Function to resize the image to fit within specified width and height
+        function autoResizeImage(maxWidth, maxHeight) {
+            const canvas = document.getElementById('photoCanvas');
+            const image = canvas.toDataURL("image/jpeg"); // Convert canvas to base64 image
+
+            const img = new Image();
+            img.src = image;
+            img.onload = function() {
+                const width = img.width;
+                const height = img.height;
+                let newWidth, newHeight;
+
+                if (width > height) {
+                    newWidth = maxWidth;
+                    newHeight = (maxWidth / width) * height;
+                } else {
+                    newHeight = maxHeight;
+                    newWidth = (maxHeight / height) * width;
+                }
+
+                Caman('#photoCanvas', function () {
+                    this.resize({ width: newWidth, height: newHeight }).render();
+                });
+            };
+        }
+    </script>
+</body>
+</html>
